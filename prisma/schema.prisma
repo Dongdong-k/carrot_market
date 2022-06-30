@@ -1,11 +1,26 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// previewFeatures = ["referentialIntegrity"]
+// Vitess doesn't support foreign key
+// it means that prisma will supoort foreign key function
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialIntegrity"]
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider             = "mysql"
+  url                  = env("DATABASE_URL")
+  referentialIntegrity = "prisma"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  phone     Int?     @unique
+  email     String?  @unique
+  avatar    String?
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

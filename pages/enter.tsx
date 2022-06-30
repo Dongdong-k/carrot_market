@@ -1,15 +1,36 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import Button from "../components/button";
+import Input from "../components/input";
 
 // classname 관련 함수
 function cls(...classnames: String[]) {
   return classnames.join(" "); // 빈칸 포함하여 붙여서 반환
 }
 
+interface EnterForm {
+  email: string;
+  phone: string;
+}
+
 export default function Enter() {
+  const { register, reset, handleSubmit } = useForm<EnterForm>();
   const [method, setMethod] = useState<"email" | "phone">("email"); //<"email" | "phone"> : type 설정
-  const onEmailClick = () => setMethod("email");
-  const onPhoneClick = () => setMethod("phone");
+  const onEmailClick = () => {
+    reset();
+    setMethod("email");
+  };
+  const onPhoneClick = () => {
+    reset();
+    setMethod("phone");
+  };
+
+  // handelSubmit 관련 함수
+  const onValid = (data: EnterForm) => {
+    console.log(data);
+  };
+  const onInvalid = () => {};
+
   return (
     <div className="mt-16 mx-8">
       <h3 className="text-3xl font-bold text-center">Enter to Carrot</h3>
@@ -41,34 +62,29 @@ export default function Enter() {
             </button>
           </div>
         </div>
-        <form className="flex flex-col mt-8 space-y-4">
-          <label htmlFor="input" className="text-sm font-medium text-gray-700">
-            {method === "email" ? "Email address" : null}
-            {method === "phone" ? "Phone number" : null}
-          </label>
+        <form
+          onSubmit={handleSubmit(onValid, onInvalid)}
+          className="flex flex-col mt-8 space-y-4"
+        >
           {method === "email" ? (
-            <input
-              id="input"
-              type="email"
+            <Input
+              name="email"
+              label="Email address"
+              kind="text"
+              type="text"
               required
-              className="appearance-none w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-500 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+              register={register("email")}
             />
           ) : null}
           {method === "phone" ? (
-            <div className="flex rounded-md shadow-sm">
-              <span
-                className="flex items-center justify-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-orange-500 text-sm select-none
-                "
-              >
-                +82
-              </span>
-              <input
-                id="input"
-                type="number"
-                required
-                className="appearance-none w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-500 focus:outline-none focus:ring-orange-500 focus:border-orange-500 rounded-l-none"
-              />
-            </div>
+            <Input
+              name="phone"
+              label="Phone number"
+              kind="phone"
+              type="phone"
+              required
+              register={register("phone")}
+            />
           ) : null}
           {method === "email" ? <Button text="Get login link" /> : null}
           {method === "phone" ? <Button text="Get one-time password" /> : null}

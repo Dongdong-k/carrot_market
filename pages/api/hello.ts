@@ -3,11 +3,14 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 
 type Data = {
   name: string
+  data : any
 }
 
 export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  res.status(200).json({ name: 'John Doe' })
+  // console.log("req : ", req)
+  // console.log("res : ", res)
+  res.status(200).json({ name: 'John Doe', data :"it's nextjs" })  
 }

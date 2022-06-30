@@ -1,11 +1,21 @@
+import type { HTMLInputTypeAttribute } from "react";
+
 interface InputProps {
   label: string;
   name: string;
   kind: "text" | "phone" | "price";
-  [key: string]: any;
+  type: HTMLInputTypeAttribute | undefined;
+  required: boolean;
+  [key: string]: any; // 모든 Prop 받을 수 있게 해줌
 }
 
-export default function Input({ label, name, kind, ...rest }: InputProps) {
+export default function Input({
+  label,
+  name,
+  kind,
+  register,
+  ...rest
+}: InputProps) {
   return (
     <div>
       <label
@@ -18,6 +28,7 @@ export default function Input({ label, name, kind, ...rest }: InputProps) {
         <div className="rounded-md relative flex  items-center shadow-sm">
           <input
             id={name}
+            {...register}
             {...rest}
             className="appearance-none w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
           />
@@ -30,6 +41,7 @@ export default function Input({ label, name, kind, ...rest }: InputProps) {
           </div>
           <input
             id={name}
+            {...register}
             {...rest}
             className="appearance-none pl-7 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
           />
@@ -45,6 +57,7 @@ export default function Input({ label, name, kind, ...rest }: InputProps) {
           </span>
           <input
             id={name}
+            {...register}
             {...rest}
             className="appearance-none w-full px-3 py-2 border border-gray-300 rounded-md rounded-l-none shadow-sm placeholder-gray-400 focus:outline-none focus:ring-orange-500 focus:border-orange-500"
           />
