@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { FieldErrors, useForm } from "react-hook-form";
 import Button from "../components/button";
 import Input from "../components/input";
 
@@ -14,22 +14,43 @@ interface EnterForm {
 }
 
 export default function Enter() {
-  const { register, reset, handleSubmit } = useForm<EnterForm>();
+  const [submitting, setSubmitting] = useState(false); // 로그인 로딩 체크
+  const {
+    register,
+    reset,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<EnterForm>();
   const [method, setMethod] = useState<"email" | "phone">("email"); //<"email" | "phone"> : type 설정
   const onEmailClick = () => {
-    reset();
+    reset(); // Form reset
     setMethod("email");
   };
   const onPhoneClick = () => {
-    reset();
+    reset(); // Form reset
     setMethod("phone");
   };
 
   // handelSubmit 관련 함수
   const onValid = (data: EnterForm) => {
+    setSubmitting(true); // 로딩 시작
+    // Login API
+    fetch("/api/users/enter", {
+      method: "POST",
+      body: JSON.stringify(data),
+      // api에서 Req.body 가능하지만, req.body.email 맵핑 안되는 문제 해결
+      // POST 프로토콜로 json 데이터 송부시 Fetch() 사용하는데
+      // Body 데이터 유형은 반드시 Content-Type 헤더와 일치해야함
+      // 보통 html form 태그 사용하여 Post 요청시 Content-type : application/x-www-form-urlencoded 임
+      headers: {
+        "Content-type": "application/json",
+      },
+    }).then(() => setSubmitting(false)); //로딩 종료
     console.log(data);
   };
-  const onInvalid = () => {};
+  const onInvalid = (errors: FieldErrors) => {
+    console.log(errors);
+  };
 
   return (
     <div className="mt-16 mx-8">
@@ -73,7 +94,12 @@ export default function Enter() {
               kind="text"
               type="text"
               required
-              register={register("email")}
+              register={register("email", {
+                pattern: {
+                  value: /^\S+@\S+$/i,
+                  message: "this is not email form",
+                },
+              })}
             />
           ) : null}
           {method === "phone" ? (
@@ -86,8 +112,17 @@ export default function Enter() {
               register={register("phone")}
             />
           ) : null}
-          {method === "email" ? <Button text="Get login link" /> : null}
-          {method === "phone" ? <Button text="Get one-time password" /> : null}
+          {errors?.email ? (
+            <span className="flex justify-center text-red-600 text-base font-medium">
+              {errors?.email?.message}
+            </span>
+          ) : null}
+          {method === "email" ? (
+            <Button text={submitting ? "Loading" : "Get login link"} />
+          ) : null}
+          {method === "phone" ? (
+            <Button text={submitting ? "Loading" : "Get one-time password"} />
+          ) : null}
         </form>
         <div className="mt-6">
           <div className="relative">
