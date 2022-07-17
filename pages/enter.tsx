@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
 import Button from "../components/button";
 import Input from "../components/input";
+import useMutation from "../libs/client/useMutation";
 
 // classname 관련 함수
 function cls(...classnames: String[]) {
@@ -14,6 +15,7 @@ interface EnterForm {
 }
 
 export default function Enter() {
+  const [enter, { loading, data, error }] = useMutation("/api/users/enter");
   const [submitting, setSubmitting] = useState(false); // 로그인 로딩 체크
   const {
     register,
@@ -33,24 +35,15 @@ export default function Enter() {
 
   // handelSubmit 관련 함수
   const onValid = (data: EnterForm) => {
+    // console.log("data", data);
     setSubmitting(true); // 로딩 시작
-    // Login API
-    fetch("/api/users/enter", {
-      method: "POST",
-      body: JSON.stringify(data),
-      // api에서 Req.body 가능하지만, req.body.email 맵핑 안되는 문제 해결
-      // POST 프로토콜로 json 데이터 송부시 Fetch() 사용하는데
-      // Body 데이터 유형은 반드시 Content-Type 헤더와 일치해야함
-      // 보통 html form 태그 사용하여 Post 요청시 Content-type : application/x-www-form-urlencoded 임
-      headers: {
-        "Content-type": "application/json",
-      },
-    }).then(() => setSubmitting(false)); //로딩 종료
-    console.log(data);
+    enter(data);
+    setSubmitting(false); //로딩 종료
   };
   const onInvalid = (errors: FieldErrors) => {
     console.log(errors);
   };
+  console.log(loading, data, error);
 
   return (
     <div className="mt-16 mx-8">
