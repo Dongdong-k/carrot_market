@@ -1,7 +1,7 @@
+import Button from "@components/button";
+import Layout from "@components/layout";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import Button from "../../components/button";
-import Layout from "../../components/layout";
 
 const ItemDetail: NextPage = () => {
   return (

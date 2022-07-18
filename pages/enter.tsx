@@ -1,8 +1,8 @@
+import Button from "@components/button";
+import Input from "@components/input";
+import useMutation from "@libs/client/useMutation";
 import { useState } from "react";
 import { FieldErrors, useForm } from "react-hook-form";
-import Button from "../components/button";
-import Input from "../components/input";
-import useMutation from "../libs/client/useMutation";
 
 // classname 관련 함수
 function cls(...classnames: String[]) {

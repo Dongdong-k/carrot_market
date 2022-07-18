@@ -1,8 +1,8 @@
+import Button from "@components/button";
+import Input from "@components/input";
+import Layout from "@components/layout";
+import TextArea from "@components/textarea";
 import type { NextPage } from "next";
-import Button from "../../components/button";
-import Input from "../../components/input";
-import Layout from "../../components/layout";
-import TextArea from "../../components/textarea";
 
 const Upload: NextPage = () => {
   return (
@@ -28,7 +28,7 @@ const Upload: NextPage = () => {
           </label>
         </div>
         <div className="my-5">
-          <Input required label="Name" name="name" kind="text" />
+          <Input required label="Name" name="name" kind="text" type={"text"} />
           <Input
             required
             label="Price"

@@ -1,5 +1,5 @@
+import Button from "@components/button";
 import { NextPage } from "next";
-import Button from "../../components/button";
 
 const EditProfile: NextPage = () => {
   return (
