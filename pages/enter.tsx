@@ -72,7 +72,9 @@ export default function Enter() {
     if (tokenLoading) return;
     confirmToken(validForm);
   };
-  const onTokenInValid = (errors: FieldErrors) => {};
+  const onTokenInValid = (errors: FieldErrors) => {
+    console.log(errors);
+  };
   //*****************************************
 
   return (
