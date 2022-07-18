@@ -1,12 +1,20 @@
 import client from "@libs/server/client";
-import withHandler from "@libs/server/withHandler";
+import withHandler, { ResponseType } from "@libs/server/withHandler";
 import { NextApiRequest, NextApiResponse } from "next";
+import twilio, { Twilio } from "twilio";
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log(req.body);
+const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+
+async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<ResponseType>
+) {
+  console.log("req.body : ", req.body);
   const { email, phone } = req.body;
-  const user = phone ? { phone: +phone } : { email }; // phone, email 조건에 따라 코드 분리
+  const user = phone ? { phone: +phone } : email ? { email } : null; // phone, email 조건에 따라 코드 분리
   const payload = Math.floor(100000 + Math.random() * 900000) + "";
+
+  if (!user) return res.status(400).json({ ok: false }); // user 없는 경우 status 400 출력
 
   // upsert 활용하기 - create, update, where(find)
   // phone 으로 사용자 검색 -> 없는 경우 생성 or 있는 경우 업데이트
@@ -31,11 +39,16 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     },
   });
 
-  console.log(token);
-
-  res.json({
-    ok: true,
-  });
+  // 핸드폰 번호 로그인시 코드 문자 메세지로 전송
+  if (phone) {
+    const message = await twilioClient.messages.create({
+      messagingServiceSid: process.env.SERVICE_SID,
+      body: `here is the CODE : ${payload}`,
+      to: process.env.PHONE_NUMBER!, // 필수값으로 ! 써주기, Trial 버전으로 내 번호로만 가능
+    });
+    console.log("message : ", message);
+  }
+  return res.json({ ok: true, token });
 }
 
 export default withHandler("POST", handler);
