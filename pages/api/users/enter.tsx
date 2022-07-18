@@ -41,12 +41,12 @@ async function handler(
 
   // 핸드폰 번호 로그인시 코드 문자 메세지로 전송
   if (phone) {
-    const message = await twilioClient.messages.create({
-      messagingServiceSid: process.env.SERVICE_SID,
-      body: `here is the CODE : ${payload}`,
-      to: process.env.PHONE_NUMBER!, // 필수값으로 ! 써주기, Trial 버전으로 내 번호로만 가능
-    });
-    console.log("message : ", message);
+    // const message = await twilioClient.messages.create({
+    //   messagingServiceSid: process.env.SERVICE_SID,
+    //   body: `here is the CODE : ${payload}`,
+    //   to: process.env.PHONE_NUMBER!, // 필수값으로 ! 써주기, Trial 버전으로 내 번호로만 가능
+    // });
+    // console.log("message : ", message);
   }
   return res.json({ ok: true, token });
 }

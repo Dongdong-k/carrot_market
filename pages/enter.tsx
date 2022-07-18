@@ -14,15 +14,38 @@ interface EnterForm {
   phone: string;
 }
 
+interface TokenForm {
+  token: string;
+}
+
+interface MutationResult {
+  ok: boolean;
+}
+
 export default function Enter() {
-  const [enter, { loading, data, error }] = useMutation("/api/users/enter");
-  const [submitting, setSubmitting] = useState(false); // 로그인 로딩 체크
+  //***************** login API ****************
+  // 1. Check Phone | Email
+  const [enter, { loading, data, error }] =
+    useMutation<MutationResult>("/api/users/enter");
+  // 2. Confirm Token
+  const [confirmToken, { loading: tokenLoading, data: tokenData }] =
+    useMutation<MutationResult>("/api/users/confirm");
+  //*****************************************
+  //***************** useForm ****************
   const {
     register,
     reset,
     handleSubmit,
     formState: { errors },
   } = useForm<EnterForm>();
+  const {
+    register: tokenRegister,
+    handleSubmit: tokenHandleSubmit,
+    formState: { errors: tokenErros },
+  } = useForm<TokenForm>();
+  //*****************************************
+
+  const [submitting, setSubmitting] = useState(false); // 로그인 로딩 체크
   const [method, setMethod] = useState<"email" | "phone">("email"); //<"email" | "phone"> : type 설정
   const onEmailClick = () => {
     reset(); // Form reset
@@ -33,7 +56,7 @@ export default function Enter() {
     setMethod("phone");
   };
 
-  // handelSubmit 관련 함수
+  //***************** useForm - handleSubmit ****************
   const onValid = (data: EnterForm) => {
     // console.log("data", data);
     setSubmitting(true); // 로딩 시작
@@ -43,80 +66,114 @@ export default function Enter() {
   const onInvalid = (errors: FieldErrors) => {
     console.log(errors);
   };
-  console.log(loading, data, error);
+
+  const onTokenValid = (validForm: TokenForm) => {
+    console.log("validForm : ", validForm);
+    if (tokenLoading) return;
+    confirmToken(validForm);
+  };
+  const onTokenInValid = (errors: FieldErrors) => {};
+  //*****************************************
 
   return (
     <div className="mt-16 mx-8">
       <h3 className="text-3xl font-bold text-center">Enter to Carrot</h3>
       <div className="mt-8">
-        <div className="flex flex-col items-center">
-          <h5 className="text-sm font-medium text-gray-500">Enter using:</h5>
-          <div className="grid grid-cols-2 border-b gap-16 mt-8 w-full">
-            <button
-              className={cls(
-                "pb-4 font-medium border-b-2",
-                method === "email"
-                  ? " border-orange-500 text-orange-500"
-                  : "border-transparent text-gray-500"
-              )}
-              onClick={onEmailClick}
-            >
-              Email Address
-            </button>
-            <button
-              className={cls(
-                "pb-4 font-medium border-b-2",
-                method === "phone"
-                  ? " border-orange-500 text-orange-500"
-                  : "border-transparent text-gray-500"
-              )}
-              onClick={onPhoneClick}
-            >
-              Phone Number
-            </button>
-          </div>
-        </div>
-        <form
-          onSubmit={handleSubmit(onValid, onInvalid)}
-          className="flex flex-col mt-8 space-y-4"
-        >
-          {method === "email" ? (
+        {/* email | phone 입력여부에 따른 화면 */}
+        {data?.ok ? (
+          // email | phone 입력 후 ok 상태
+          <form
+            onSubmit={tokenHandleSubmit(onTokenValid, onTokenInValid)}
+            className="flex flex-col mt-8 space-y-4"
+          >
             <Input
-              name="email"
-              label="Email address"
+              name="token"
+              label="Confirmation Token"
               kind="text"
-              type="text"
+              type="number"
               required
-              register={register("email", {
-                pattern: {
-                  value: /^\S+@\S+$/i,
-                  message: "this is not email form",
-                },
+              register={tokenRegister("token", {
+                required: true,
               })}
             />
-          ) : null}
-          {method === "phone" ? (
-            <Input
-              name="phone"
-              label="Phone number"
-              kind="phone"
-              type="phone"
-              required
-              register={register("phone")}
-            />
-          ) : null}
-          {errors?.email ? (
-            <span className="flex justify-center text-red-600 text-base font-medium">
-              {errors?.email?.message}
-            </span>
-          ) : null}
-          {method === "email" ? (
-            <Button text={submitting ? "Loading" : "Get login link"} />
-          ) : null}
-          {method === "phone" ? (
-            <Button text={submitting ? "Loading" : "Get one-time password"} />
-          ) : null}
-        </form>
+
+            <Button text={tokenLoading ? "Loading" : "Confirm Token"} />
+          </form>
+        ) : (
+          // email | phone 입력 전 화면
+          <>
+            <div className="flex flex-col items-center">
+              <h5 className="text-sm font-medium text-gray-500">
+                Enter using:
+              </h5>
+              <div className="grid grid-cols-2 border-b gap-16 mt-8 w-full">
+                <button
+                  className={cls(
+                    "pb-4 font-medium border-b-2",
+                    method === "email"
+                      ? " border-orange-500 text-orange-500"
+                      : "border-transparent text-gray-500"
+                  )}
+                  onClick={onEmailClick}
+                >
+                  Email Address
+                </button>
+                <button
+                  className={cls(
+                    "pb-4 font-medium border-b-2",
+                    method === "phone"
+                      ? " border-orange-500 text-orange-500"
+                      : "border-transparent text-gray-500"
+                  )}
+                  onClick={onPhoneClick}
+                >
+                  Phone Number
+                </button>
+              </div>
+            </div>
+            <form
+              onSubmit={handleSubmit(onValid, onInvalid)}
+              className="flex flex-col mt-8 space-y-4"
+            >
+              {method === "email" ? (
+                <Input
+                  name="email"
+                  label="Email address"
+                  kind="text"
+                  type="text"
+                  required
+                  register={register("email", {
+                    pattern: {
+                      value: /^\S+@\S+$/i,
+                      message: "this is not email form",
+                    },
+                  })}
+                />
+              ) : null}
+              {method === "phone" ? (
+                <Input
+                  name="phone"
+                  label="Phone number"
+                  kind="phone"
+                  type="phone"
+                  required
+                  register={register("phone")}
+                />
+              ) : null}
+              {errors?.email ? (
+                <span className="flex justify-center text-red-600 text-base font-medium">
+                  {errors?.email?.message}
+                </span>
+              ) : null}
+              {method === "email" ? (
+                <Button text={loading ? "Loading" : "Get login link"} />
+              ) : null}
+              {method === "phone" ? (
+                <Button text={loading ? "Loading" : "Get one-time password"} />
+              ) : null}
+            </form>
+          </>
+        )}
         <div className="mt-6">
           <div className="relative">
             <div className="absolute w-full border-t border-gray-300" />
