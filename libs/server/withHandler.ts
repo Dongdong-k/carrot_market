@@ -9,7 +9,10 @@ export default function withHandler(
   method: "GET" | "POST" | "DELETE",
   fn: (req: NextApiRequest, res: NextApiResponse) => void
 ) {
-  return async function (req: NextApiRequest, res: NextApiResponse) {
+  return async function (
+    req: NextApiRequest,
+    res: NextApiResponse
+  ): Promise<any> {
     if (req.method !== method) {
       // 요청한 method와 실행할 api method 다른 경우
       // api url로 접속시도하는 경우 접근차단 가능
