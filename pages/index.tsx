@@ -1,8 +1,11 @@
 import FloatingButton from "@components/floating-button";
 import Layout from "@components/layout";
+import useUser from "@libs/client/useUser";
 import type { NextPage } from "next";
 
 const Home: NextPage = () => {
+  const { user, isLoading } = useUser();
+  console.log("user ; ", user, "isLoading : ", isLoading);
   return (
     <Layout title="Home" hasTapBar={true}>
       <div className="flex flex-col space-y-5 px-8">
