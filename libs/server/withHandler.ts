@@ -5,10 +5,17 @@ export interface ResponseType {
   [key: string]: any;
 }
 
-export default function withHandler(
-  method: "GET" | "POST" | "DELETE",
-  fn: (req: NextApiRequest, res: NextApiResponse) => void
-) {
+interface ConfigType {
+  method: "GET" | "POST" | "DELETE";
+  handler: (req: NextApiRequest, res: NextApiResponse) => void;
+  isPrivate?: boolean;
+}
+
+export default function withHandler({
+  handler,
+  isPrivate = true, //default = true
+  method,
+}: ConfigType) {
   return async function (
     req: NextApiRequest,
     res: NextApiResponse
@@ -18,9 +25,12 @@ export default function withHandler(
       // api url로 접속시도하는 경우 접근차단 가능
       return res.status(405).end();
     }
+    if (isPrivate && !req.session.user) {
+      return res.status(400).json({ ok: false, error: "Please Log In" });
+    }
     try {
       // 정상요청 경우, function 실행
-      await fn(req, res);
+      await handler(req, res);
     } catch (error) {
       // 에러 발생시 처리
       console.log(error);

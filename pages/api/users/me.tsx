@@ -8,7 +8,7 @@ async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType>
 ) {
-  // session 내용 확인하기
+  // session 내용 확인하기 - token으로 부터 데이터 복원
   const profile = await client.user.findUnique({
     where: { id: req.session.user?.id },
   });
@@ -20,4 +20,4 @@ async function handler(
 }
 
 //
-export default withIronSession(withHandler("GET", handler));
+export default withIronSession(withHandler({ method: "GET", handler }));

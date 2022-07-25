@@ -38,4 +38,6 @@ async function handler(
 }
 
 //
-export default withIronSession(withHandler("POST", handler));
+export default withIronSession(
+  withHandler({ method: "POST", handler, isPrivate: false })
+);
