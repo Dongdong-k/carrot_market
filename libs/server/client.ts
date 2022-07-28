@@ -1,5 +1,14 @@
 import { PrismaClient } from "@prisma/client";
 
-const client = new PrismaClient();
+// global client type 설정
+declare global {
+  var client: PrismaClient | undefined;
+}
 
-export default client
+const client = global.client || new PrismaClient();
+
+if (process.env.NODE_ENV == "development") {
+  global.client = client;
+}
+
+export default client;

@@ -1,10 +1,12 @@
 import type { HTMLInputTypeAttribute } from "react";
+import { UseFormRegisterReturn } from "react-hook-form";
 
 interface InputProps {
   label: string;
   name: string;
   kind: "text" | "phone" | "price";
   type: HTMLInputTypeAttribute | undefined;
+  register: UseFormRegisterReturn;
   required: boolean;
   [key: string]: any; // 모든 Prop 받을 수 있게 해줌
 }

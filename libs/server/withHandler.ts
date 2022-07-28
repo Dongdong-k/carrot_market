@@ -2,11 +2,14 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export interface ResponseType {
   ok: boolean;
+
   [key: string]: any;
 }
 
+type method = "GET" | "POST" | "DELETE";
+
 interface ConfigType {
-  method: "GET" | "POST" | "DELETE";
+  methods: method[];
   handler: (req: NextApiRequest, res: NextApiResponse) => void;
   isPrivate?: boolean;
 }
@@ -14,13 +17,13 @@ interface ConfigType {
 export default function withHandler({
   handler,
   isPrivate = true, //default = true
-  method,
+  methods,
 }: ConfigType) {
   return async function (
     req: NextApiRequest,
     res: NextApiResponse
   ): Promise<any> {
-    if (req.method !== method) {
+    if (req.method && !methods.includes(req.method as any)) {
       // 요청한 method와 실행할 api method 다른 경우
       // api url로 접속시도하는 경우 접근차단 가능
       return res.status(405).end();

@@ -78,6 +78,7 @@ export default function Enter() {
   };
   //*****************************************
   //***************** useRouter & useEffect ****************
+  // 로그인 성공시 Home 화면으로 이동
   const router = useRouter();
   useEffect(() => {
     if (tokenData?.ok) {

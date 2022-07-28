@@ -8,14 +8,16 @@ async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType>
 ) {
-  // session 내용 확인하기 - token으로 부터 데이터 복원
-  const profile = await client.user.findUnique({
-    where: { id: req.session.user?.id },
+  const { id } = req.query;
+  const product = await client.product.findUnique({
+    where: { id: +id.toString() },
+    include: {
+      user: true,
+    },
   });
-  console.log(profile);
   res.json({
     ok: true,
-    profile,
+    product,
   });
 }
 
