@@ -1,16 +1,31 @@
 import Button from "@components/button";
 import Layout from "@components/layout";
+import { Product, User } from "@prisma/client";
 import type { NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import useSWR from "swr";
 
+interface ProductWithUser extends Product {
+  user: User;
+}
+interface ItemDetailResponse {
+  ok: boolean;
+  product: ProductWithUser;
+  relatedProducts: Product[];
+}
+
 const ItemDetail: NextPage = () => {
+  // url로부터 id 값 가져오기
   const {
     query: { id },
   } = useRouter();
-  const { data } = useSWR(id ? `/api/products/${id}` : null);
-  console.log("data : ", data);
+
+  // id로 데이터 검색하기
+  const { data } = useSWR<ItemDetailResponse>(
+    id ? `/api/products/${id}` : null
+  );
+
   return (
     <Layout title="Item Detail" canGoBack>
       <div className="px-4 py-10">
@@ -64,17 +79,18 @@ const ItemDetail: NextPage = () => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Similar items</h2>
           <div className="grid grid-cols-2 gap-4 mt-6">
-            {[1, 2, 3, 4, 5, 6].map((_, i) => (
-              <div
-                key={i}
-                className="hover:ring-2 hover:ring-offset-2 hover:outline-none hover:ring-orange-500 rounded-md flex flex-col items-center py-1 cursor-pointer"
-              >
-                <div>
-                  <div className="h-52 w-52 bg-slate-300 rounded-md mb-4" />
-                  <h3 className="text-gray-700 -mb-1 item">Galaxy S60</h3>
-                  <span className="text-sm font-medium text-gray-900">$6</span>
-                </div>
-              </div>
+            {data?.relatedProducts.map((product) => (
+              <Link key={product.id} href={`/products/${product.id}`}>
+                <a className="hover:ring-2 hover:ring-offset-2 hover:outline-none hover:ring-orange-500 rounded-md flex flex-col items-center py-1 cursor-pointer">
+                  <div>
+                    <div className="h-52 w-52 bg-slate-300 rounded-md mb-4" />
+                    <h3 className="text-gray-700 -mb-1 item">{product.name}</h3>
+                    <span className="text-sm font-medium text-gray-900">
+                      ${product.price}
+                    </span>
+                  </div>
+                </a>
+              </Link>
             ))}
           </div>
         </div>

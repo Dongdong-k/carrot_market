@@ -15,9 +15,30 @@ async function handler(
       user: true,
     },
   });
+
+  // Similar Item Search
+  // 키워드 배열로 변경 & 검색을 위해 객체 형식으로 만들기
+  const terms = product?.name.split(" ").map((word) => ({
+    name: {
+      contains: word,
+    },
+  }));
+
+  const relatedProducts = await client.product.findMany({
+    where: {
+      OR: terms,
+      AND: {
+        id: {
+          not: product?.id, // 현재 상품은 제외하기
+        },
+      },
+    },
+  });
+
   res.json({
     ok: true,
     product,
+    relatedProducts,
   });
 }
 
