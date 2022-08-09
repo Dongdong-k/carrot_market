@@ -4,18 +4,20 @@ import Layout from "@components/layout";
 import useUser from "@libs/client/useUser";
 import { Product } from "@prisma/client";
 import type { NextPage } from "next";
-import { connected } from "process";
 import useSWR from "swr";
 
+interface ProductWithCount extends Product {
+  _count: { favs: number };
+}
 interface ProductsResponse {
   ok: boolean;
-  products: Product[];
+  products: ProductWithCount[];
 }
 
 const Home: NextPage = () => {
   const { user, isLoading } = useUser();
   const { data } = useSWR<ProductsResponse>("/api/products");
-  console.log(data);
+  console.log("home - data : ", data);
   return (
     <Layout title="Home" hasTapBar={true}>
       <div className="flex flex-col space-y-5 px-8">
@@ -26,7 +28,7 @@ const Home: NextPage = () => {
             title={product?.name}
             price={product?.price}
             comments={1}
-            hearts={1}
+            hearts={product?._count.favs}
           />
         ))}
         <FloatingButton href="/products/upload">

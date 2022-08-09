@@ -12,7 +12,7 @@ async function handler(
   const profile = await client.user.findUnique({
     where: { id: req.session.user?.id },
   });
-  console.log(profile);
+  console.log("api/users/me - profile: ", profile);
   res.json({
     ok: true,
     profile,
