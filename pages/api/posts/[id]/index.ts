@@ -10,8 +10,10 @@ async function handler(
 ) {
   const {
     query: { id },
+    session: { user },
   } = req;
 
+  // post 정보 가져오기
   const post = await client.post.findUnique({
     where: {
       id: +id.toString(),
@@ -46,9 +48,23 @@ async function handler(
     },
   });
 
+  // post 에 대한 wondering 정보 가져오기
+  const isWondering = Boolean(
+    await client.wondering.findFirst({
+      where: {
+        postId: +id.toString(),
+        userId: user?.id,
+      },
+      select: {
+        id: true,
+      },
+    })
+  );
+
   res.json({
     ok: true,
     post,
+    isWondering,
   });
 }
 

@@ -1,4 +1,6 @@
 import TextArea from "@components/textarea";
+import useMutation from "@libs/client/useMutation";
+import { cls } from "@libs/client/utils";
 import { Answer, Post, User } from "@prisma/client";
 import type { NextPage } from "next";
 import Link from "next/link";
@@ -23,13 +25,38 @@ interface PostWithUser extends Post {
 interface CommunityPostResponse {
   ok: boolean;
   post: PostWithUser;
+  isWondering: boolean;
 }
 
 const CommunityPostDetail: NextPage = () => {
   const router = useRouter();
-  const { data, error } = useSWR<CommunityPostResponse>(
+  const { data, mutate } = useSWR<CommunityPostResponse>(
     router.query.id ? `/api/posts/${router.query.id}` : null
   );
+
+  // 궁금해요 API
+  const [getWonder] = useMutation(`/api/posts/${router.query.id}/wonder`);
+  const onWonderClick = () => {
+    // onBound mutate
+    if (!data) return;
+    mutate(
+      {
+        ...data, // 기존 data 정보 가져오기
+        post: {
+          ...data?.post,
+          _count: {
+            ...data?.post._count,
+            wonderings: data?.isWondering
+              ? data?.post._count.wonderings - 1
+              : data?.post._count.wonderings + 1, // 기존 data에서 필요한 부분만 수정
+          },
+        },
+        isWondering: !data?.isWondering,
+      },
+      false
+    ); // 두번째 인자 True 경우 : 캐시 업데이트 후 API 업데이트 실행 & Validate
+    getWonder({});
+  };
   console.log(router.query.id);
   console.log(data);
   return (
@@ -56,7 +83,13 @@ const CommunityPostDetail: NextPage = () => {
           {data?.post?.question}
         </div>
         <div className="flex px-4 space-x-5 mt-3 text-gray-700 py-2.5 border-t border-b-[2px]  w-full">
-          <span className="flex space-x-2 items-center text-sm">
+          <button
+            onClick={onWonderClick}
+            className={cls(
+              "flex space-x-2 items-center text-sm",
+              data?.isWondering ? "text-teal-400" : ""
+            )}
+          >
             <svg
               className="w-4 h-4"
               fill="none"
@@ -72,7 +105,7 @@ const CommunityPostDetail: NextPage = () => {
               ></path>
             </svg>
             <span>궁금해요 {data?.post?._count?.wonderings} </span>
-          </span>
+          </button>
           <span className="flex space-x-2 items-center text-sm">
             <svg
               className="w-4 h-4"
