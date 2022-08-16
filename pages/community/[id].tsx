@@ -5,6 +5,8 @@ import { Answer, Post, User } from "@prisma/client";
 import type { NextPage } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import useSWR from "swr";
 
 interface AnswerWithUser extends Answer {
@@ -28,14 +30,30 @@ interface CommunityPostResponse {
   isWondering: boolean;
 }
 
+// For useForm Hook
+interface AnswerForm {
+  answer: string;
+}
+
+interface AnswerResponse {
+  ok: boolean;
+  answer: Answer;
+}
+
 const CommunityPostDetail: NextPage = () => {
   const router = useRouter();
   const { data, mutate } = useSWR<CommunityPostResponse>(
     router.query.id ? `/api/posts/${router.query.id}` : null
   );
 
+  const { register, handleSubmit, reset } = useForm<AnswerForm>();
+
   // 궁금해요 API
-  const [getWonder] = useMutation(`/api/posts/${router.query.id}/wonder`);
+  const [getWonder, { loading }] = useMutation(
+    `/api/posts/${router.query.id}/wonder`
+  );
+
+  // 궁금해요 API 실행 및 캐쉬 업데이트
   const onWonderClick = () => {
     // onBound mutate
     if (!data) return;
@@ -55,10 +73,32 @@ const CommunityPostDetail: NextPage = () => {
       },
       false
     ); // 두번째 인자 True 경우 : 캐시 업데이트 후 API 업데이트 실행 & Validate
-    getWonder({});
+    // 빠르게 여러번 클릭하는 경우 중복 실행 방지
+    if (!loading) {
+      getWonder({});
+    }
   };
+
+  // 댓글 API
+  const [sendAnswer, { data: answerData, loading: answerLoading }] =
+    useMutation<AnswerResponse>(`/api/posts/${router.query.id}/answers`);
   console.log(router.query.id);
   console.log(data);
+
+  // 댓글 handleSubmit - onValid
+  const onValid = (form: AnswerForm) => {
+    console.log(form);
+    if (answerLoading) return; // loading 중이면 미실행하기
+    sendAnswer(form);
+  };
+
+  // 댓글 입력 정상실행시 입력창 지우기
+  useEffect(() => {
+    if (answerData?.ok) {
+      reset();
+    }
+  }, [answerData, reset]);
+
   return (
     <div>
       <span className="inline-flex my-3 ml-4 items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -141,16 +181,20 @@ const CommunityPostDetail: NextPage = () => {
           </div>
         ))}
       </div>
-      <div className="px-4">
+      <form className="px-4" onSubmit={handleSubmit(onValid)}>
         <TextArea
           name="description"
           placeholder="Answer this question!"
           required
+          register={register("answer", {
+            required: true,
+            minLength: { value: 5, message: "min Length is 5" },
+          })}
         />
         <button className="mt-2 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 focus:outline-none ">
-          Reply
+          {answerLoading ? "Loading..." : "Reply"}
         </button>
-      </div>
+      </form>
     </div>
   );
 };
